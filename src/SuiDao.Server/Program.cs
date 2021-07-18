@@ -1,10 +1,9 @@
-﻿using FastTunnel.Core.Core;
+﻿using FastTunnel.Core.Extensions;
+using FastTunnel.Core.Global;
 using FastTunnel.Core.Handlers;
-using FastTunnel.Core.Handlers.Server;
-using FastTunnel.Core.Logger;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NLog.Extensions.Logging;
+using Microsoft.Extensions.Logging;
+using System;
 
 namespace SuiDao.Server
 {
@@ -17,13 +16,22 @@ namespace SuiDao.Server
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureLogging((context) =>
-                {
-                    context.AddNLog(NlogConfig.getNewConfig());
-                })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddHostedService<SuiDaoServer>();
+                    // -------------------FastTunnel START------------------
+                    services.AddFastTunnelServer();
+                    // -------------------FastTunnel EDN--------------------
+
+                    // ---------------------覆盖原有实现----------------------
+                    FastTunnelGlobal.AddCustomHandler<IConfigHandler, SuiDaoConfigHandler>(new SuiDaoConfigHandler());
+                    // ---------------------覆盖原有实现----------------------
+                })
+                .ConfigureLogging((HostBuilderContext context, ILoggingBuilder logging) =>
+                {
+                    logging.ClearProviders();
+
+                    logging.AddLog4Net();
+                    logging.SetMinimumLevel(LogLevel.Debug);
                 });
     }
 }
