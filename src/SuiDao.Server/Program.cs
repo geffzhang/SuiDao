@@ -1,9 +1,10 @@
 ﻿using FastTunnel.Core.Extensions;
-using FastTunnel.Core.Global;
 using FastTunnel.Core.Handlers;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading;
 
 namespace SuiDao.Server
 {
@@ -13,20 +14,12 @@ namespace SuiDao.Server
         {
             CreateHostBuilder(args).Build().Run();
         }
-
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    // -------------------FastTunnel START------------------
-                    services.AddFastTunnelServer();
-                    // -------------------FastTunnel EDN--------------------
-
-                    // ---------------------覆盖原有实现----------------------
-                    FastTunnelGlobal.AddCustomHandler<IConfigHandler, SuiDaoConfigHandler>(new SuiDaoConfigHandler());
-                    // ---------------------覆盖原有实现----------------------
-                })
-                .ConfigureLogging((HostBuilderContext context, ILoggingBuilder logging) =>
+                    webBuilder.UseStartup<Startup>();
+                }).ConfigureLogging((HostBuilderContext context, ILoggingBuilder logging) =>
                 {
                     logging.ClearProviders();
 
